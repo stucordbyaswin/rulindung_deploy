@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>rulindung.app</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+
+    <!-- Buat Cropper-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <!-- Buat Cropper -->
+    <link rel="stylesheet" href="https://unpkg.com/dropzone/dist/dropzone.css" />
+    <link href="https://unpkg.com/cropperjs/dist/cropper.css" rel="stylesheet" />
+    <script src="https://unpkg.com/dropzone"></script>
+    <script src="https://unpkg.com/cropperjs"></script>
+
+    <!-- Custom -->
+    <!-- Jinja template. 2 Parameters: endpoint, file path -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        /* Add animation to "page content" */
+        .animate-bottom {
+            position: relative;
+            -webkit-animation-name: animatebottom;
+            -webkit-animation-duration: 1s;
+            animation-name: animatebottom;
+            animation-duration: 1s
+        }
+
+        @-webkit-keyframes animatebottom {
+            from {
+                bottom: -100px;
+                opacity: 0
+            }
+
+            to {
+                bottom: 0px;
+                opacity: 1
+            }
+        }
+
+        @keyframes animatebottom {
+            from {
+                bottom: -100px;
+                opacity: 0
+            }
+
+            to {
+                bottom: 0;
+                opacity: 1
+            }
+        }
+
+        @keyframes flickerAnimation {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @-o-keyframes flickerAnimation {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @-moz-keyframes flickerAnimation {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @-webkit-keyframes flickerAnimation {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #scan-loader {
+            -webkit-animation: flickerAnimation 1s infinite;
+            -moz-animation: flickerAnimation 1s infinite;
+            -o-animation: flickerAnimation 1s infinite;
+            animation: flickerAnimation 1s infinite;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="mt-3 row">
+            <div class="col">
+                <h1 class="font-weight-bold" style="font-size: 75px;"><strong>- rulindung.app</strong></h1>
+                <strong>
+                    <p
+                        style="margin-top:1em; padding-left: 3.3em; background-color: black; color: white; padding-top: .5em; padding-bottom: .5em;">
+                        Berjuang dari Kekerasan Media Sosial di Indonesia.</p>
+                </strong>
+                <hr>
+            </div>
+        </div>
+
+        <!-- Upload image form -->
+        <div class="row">
+            <!-- Upload form -->
+            <div class="mb-5 col-md-6">
+                <h3>Unggah Gambar di Sini</h3>
+                <small class="text-muted">Tangkapan layar (<em>Screenshot</em>) dalam format: .jpg, .jpeg, .png,
+                    .gif</small>
+                <br><br>
+                <form id="form-upload" method="POST">
+                    <div class="form-group mt-2">
+                        <div class="custom-file">
+                            <input oninput="filesize(this);" type="file" class="custom-file-input" name="image"
+                                id="upload_image">
+                            <label class="custom-file-label" for="image">Pilih gambar...</label>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="alert alert-success" role="alert" id="status" style="display: none;">
+                    <i class="fa fa-check"></i> Gambar berhasil diunggah.
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-info" id="btn-scan" style="display: none; padding: 8px 20px;">Pindai
+                            Gambar</button>
+                    </div>
+                    <div class="col-md-3 my-auto" id="scan-loader" style="display: none; margin-left: 20px;">Memindai...
+                    </div>
+                </div>
+
+                <br>
+                <img src="" id="img-preview" style="max-width: 100%; display: none;">
+
+            </div>
+
+            <!-- Image Preview & OCR Results -->
+            <div class="col-md-6" style="display: none;" id="phase-two">
+                <h3>Tulisan dalam Gambar</h3>
+                <small class="text-muted">Kamu dapat menyunting kembali tulisan hasil pindaian pada kotak teks di bawah
+                    ini untuk meningkatkan akurasi sistem.</small>
+                <br><br>
+                <div class="form-group">
+                    <textarea class="form-control" id="image-to-text" rows="15"></textarea>
+                    <br>
+                    <div class="text-center">
+                        <button class="btn btn-info" id="btn-predict" data-toggle="modal" data-target="#exampleModal"
+                            style="padding: 8px 24px;">Analisis</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Cropping image -->
+        <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Potong Gambar</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="img-container">
+                            <div class="row">
+
+                                <div class="col-md-9">
+                                    <img src="" id="sample_image" style="max-width: 100%; max-height: 100%;" />
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="preview"></div>
+                                    <div class="alert alert-warning" role="alert">
+                                        <strong>Ambil HANYA bagian yang ingin kamu analisis.</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" style="padding: 8px 24px;"
+                                data-dismiss="modal">Batal</button>
+                            <button type="button" id="crop" class="btn btn-dark"
+                                style="padding: 8px 24px;">Crop</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Analisis</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mx-auto" id="loader">
+                            <div id="loaderImage" style="margin: 0 auto;"></div>
+                        </div>
+
+                        <div class="animate-bottom" id="prediction" style="display: none;"></div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-info" onClick="window.location.reload();">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            function filesize(file) {
+                document.cookie = `filesize=${file.files[0].size}`;
+            }
+        </script>
+
+        <script>
+
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+            function generateString(length) {
+                let result = ' ';
+                const charactersLength = characters.length;
+                for (let i = 0; i < length; i++) {
+                    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+                }
+
+                return result;
+            }
+
+            $(document).ready(function () {
+
+                var $modal = $('#modal');
+
+                var image = document.getElementById('sample_image');
+
+                var file_input = document.getElementById('upload_image');
+
+                var cropper;
+
+                var raw_filename;
+
+                var upload_filename;
+
+                $('#upload_image').change(function (event) {
+                    var files = event.target.files;
+
+                    raw_filename = file_input.files[0].name;
+
+                    var ext = raw_filename.split(".").pop();
+
+                    allowed_ext = ['JPG', 'JPEG', 'PNG', 'GIF'];
+
+                    if (!allowed_ext.includes(ext.toUpperCase())) {
+                        alert('File extension is not supported.');
+                        location.reload();
+                    }
+
+                    upload_filename = generateString(25) + "." + ext;
+                    upload_filename = upload_filename.trim();
+
+                    var done = function (url) {
+                        image.src = url;
+                        $modal.modal('show');
+                    };
+
+                    if (files && files.length > 0) {
+                        reader = new FileReader();
+                        reader.onload = function (event) {
+                            done(reader.result);
+                        };
+                        reader.readAsDataURL(files[0]);
+                    }
+                });
+
+                $modal.on('shown.bs.modal', function () {
+                    cropper = new Cropper(image, {
+                        viewMode: 3,
+                        preview: '.preview'
+                    });
+                }).on('hidden.bs.modal', function () {
+                    cropper.destroy();
+                    cropper = null;
+                });
+
+                $('#crop').click(function () {
+
+                    canvas = cropper.getCroppedCanvas();
+
+                    canvas.toBlob((blob) => {
+                        const formData = new FormData();
+
+                        // 1st param: key 
+                        // 2nd param: value --> the file itself
+                        // 3rd param (optional): filename
+                        formData.append('croppedImage', blob, upload_filename);
+
+                        // Use `jQuery.ajax` method
+                        $.ajax('/phase-one', {
+                            method: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success() {
+                                console.log('Upload success:' + upload_filename);
+                                $modal.modal('hide');
+                                var img_src = "../static/img/uploads/";
+                                $('#status').fadeIn("slow");
+                                $('#img-preview').attr("src", img_src + upload_filename);
+                                $('#img-preview').fadeIn("3000");
+                                $('#btn-scan').fadeIn("slow");
+                            },
+                            error() {
+                                console.log('Upload error');
+                            }
+                        });
+                    });
+                });
+
+                $('#btn-scan').click(function () {
+                    var input_data = { filename: upload_filename };
+                    console.log(input_data);
+
+                    $('#scan-loader').attr("style", "display: block;");
+
+                    fetch(`${window.origin}/text-scan`, {
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(input_data),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    })
+                        .then(function (response) {
+                            if (response.status !== 200) {
+                                console.log(`Looks like there was a problem. Status code: ${response.status}`);
+                                return;
+                            }
+                            response.json().then(function (data) {
+
+                                console.log('Respon berhasil. Text yang dihasilkan oleh OCR:');
+                                console.log(data);
+
+                                $('#scan-loader').attr("style", "display: none;");
+                                $('#phase-two').fadeIn("slow");
+
+                                $('#image-to-text').text(data['text']);
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log("Fetch error: " + error);
+                        });
+
+                });
+
+                $('#btn-predict').click(function () {
+                    var sample_text = document.getElementById('image-to-text').value;
+                    var input_text = { text: sample_text };
+                    console.log(input_text);
+
+                    // Fetch API here
+                    fetch(`${window.origin}/predict`, {
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(input_text),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                    })
+                        .then(function (response) {
+                            if (response.status !== 200) {
+                                console.log(`Looks like there was a problem. Status code: ${response.status}`);
+                                return;
+                            }
+                            response.json().then(function (data) {
+
+                                console.log('Respon berhasil. Hasil prediksi:');
+                                console.log(data);
+
+                                $('#loader').attr("style", "display: none;");
+                                $('#prediction').text(data['prediction']);
+                                $('#prediction').attr("style", "display: block;");
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log("Fetch error: " + error);
+                        });
+                });
+
+            });
+        </script>
+
+        <script type="text/javascript">
+            var cSpeed = 9;
+            var cWidth = 64;
+            var cHeight = 64;
+            var cTotalFrames = 8;
+            var cFrameWidth = 64;
+            var cImageSrc = '../static/img/assets/loader/images/sprites.gif';
+
+            var cImageTimeout = false;
+            var cIndex = 0;
+            var cXpos = 0;
+            var cPreloaderTimeout = false;
+            var SECONDS_BETWEEN_FRAMES = 0;
+
+            function startAnimation() {
+
+                document.getElementById('loaderImage').style.backgroundImage = 'url(' + cImageSrc + ')';
+                document.getElementById('loaderImage').style.width = cWidth + 'px';
+                document.getElementById('loaderImage').style.height = cHeight + 'px';
+
+                //FPS = Math.round(100/(maxSpeed+2-speed));
+                FPS = Math.round(100 / cSpeed);
+                SECONDS_BETWEEN_FRAMES = 1 / FPS;
+
+                cPreloaderTimeout = setTimeout('continueAnimation()', SECONDS_BETWEEN_FRAMES / 1000);
+
+            }
+
+            function continueAnimation() {
+
+                cXpos += cFrameWidth;
+                //increase the index so we know which frame of our animation we are currently on
+                cIndex += 1;
+
+                //if our cIndex is higher than our total number of frames, we're at the end and should restart
+                if (cIndex >= cTotalFrames) {
+                    cXpos = 0;
+                    cIndex = 0;
+                }
+
+                if (document.getElementById('loaderImage'))
+                    document.getElementById('loaderImage').style.backgroundPosition = (-cXpos) + 'px 0';
+
+                cPreloaderTimeout = setTimeout('continueAnimation()', SECONDS_BETWEEN_FRAMES * 1000);
+            }
+
+            function stopAnimation() {//stops animation
+                clearTimeout(cPreloaderTimeout);
+                cPreloaderTimeout = false;
+            }
+
+            function imageLoader(s, fun)//Pre-loads the sprites image
+            {
+                clearTimeout(cImageTimeout);
+                cImageTimeout = 0;
+                genImage = new Image();
+                genImage.onload = function () { cImageTimeout = setTimeout(fun, 0) };
+                genImage.onerror = new Function('alert(\'Could not load the image\')');
+                genImage.src = s;
+            }
+
+            //The following code starts the animation
+            new imageLoader(cImageSrc, 'startAnimation()');
+        </script>
+</body>
+
+</html>
