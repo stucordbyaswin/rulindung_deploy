@@ -121,7 +121,7 @@ def predict(text):
     elif label_id == 1:
         label_name = 'Kekerasan'
 
-    prediction = 'Text: {}. \n Konten ini adalah {} ({:.0f}%)'.format(preprocessed_text, label_name, percentage)
+    prediction = 'Konten ini adalah {} ({:.0f}%)'.format(label_name, percentage)
     print(prediction)
 
     
